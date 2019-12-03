@@ -1,238 +1,141 @@
-library(nycflights13)
-library(dplyr)
 library(ggplot2)
+library(dplyr)
 
-flights
-str(flights)
+mpg
 
-summary(flights)
+qplot(x = manufacturer, data = mpg, geom = "bar")
 
-flights %>% 
-  distinct(carrier)
+# Barplot
 
-flights_tbl <- flights %>% 
-  left_join(airlines, by = "carrier")
+ggplot(data = mpg, mapping = aes(x = class)) +
+  geom_bar()
 
-not_cancel <- flights_tbl %>% 
-  filter(!is.na(dep_delay))
+ggplot(data = mpg, 
+       mapping = aes(x = reorder(class, class, function(x){-length(x)}))) +
+  geom_bar()
 
-qplot(x = name, data = not_cancel) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  coord_flip()
+sum_tbl <- as.data.frame(table(mpg$class, 
+                               dnn = list("class")), 
+                         responseName = "n")
 
-ggplot(data = not_cancel, mapping = aes(x = reorder(name, name, function(x)length(x)))) +
-  geom_bar() +
-  coord_flip() +
-  theme(axis.text.x = element_text(angle = 90))
+ggplot(data = sum_tbl, 
+       mapping = aes(x = class, y = n)) +
+  geom_bar(stat = "identity")
+
+ggplot(data = sum_tbl, 
+       mapping = aes(x = reorder(class, -n), y = n)) +
+  geom_bar(stat = "identity")
+
 
 # mengurutkan barplot berdasarkan value
 # # 1. Buat dulu tabel frekuensi dari kategori yang diinginkan
 # # 2. gunakan fungsi reorder() pada aestethic x dan n sbg y
 # # 3. gunakan stat = "identity" pada geom_bar()
 
-not_cancel <- not_cancel %>% 
-  count(name) 
+ggplot(data = sum_tbl, 
+       mapping = aes(x = reorder(class, -n), y = n)) +
+  geom_bar(stat = "identity", fill = "lightblue")
 
-ggplot(data = not_cancel, mapping = aes(x = reorder(name, -n), y = n)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90))
-
-not_cancel <- not_cancel %>% 
-  mutate(pct = n/sum(n))
-
-ggplot(data = not_cancel, mapping = aes(x = reorder(name, -pct), y = pct)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90))
-
-canceled <- flights_tbl %>% 
-  filter(is.na(dep_delay)) %>% 
-  count(name) %>% 
-  mutate(pct = n/sum(n))
-
-g <- ggplot(data = canceled, mapping = aes(x = reorder(name, -pct), y = pct)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90))
-
-g
-
-g +
-  labs(title = "Persentase Maskapai Yang Sering Melakukan Cancel",
-       x = "Maskapai",
-       y = "Persentase") +
-  theme(axis.title.y = element_text(angle = 0, vjust = 1))
-
-ggplot(data = canceled, mapping = aes(x = reorder(name, -pct), y = pct, fill = name)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90),
-        axis.title.y = element_text(angle = 0, vjust = 1),
-        legend.position = "none") +
-  labs(title = "Persentase Maskapai Yang Sering Melakukan Cancel",
-       x = "Maskapai",
-       y = "Persentase")
-
-ggplot(data = canceled, mapping = aes(x = reorder(name, -pct), y = pct*100, fill = name)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = paste(round(pct*100, 2), "%")),
-            vjust = -0.25) +
-  theme(axis.text.x = element_text(angle = 90),
-        axis.title.y = element_text(angle = 0, vjust = 1),
-        legend.position = "none") +
-  labs(title = "Persentase Maskapai Yang Sering Melakukan Cancel",
-       x = "Maskapai",
-       y = "Persentase")
-
-ggplot(data = canceled, mapping = aes(x = reorder(name, pct), y = pct*100, fill = name)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = paste(round(pct*100, 2), "%")), 
-            position = position_dodge(0.9), 
-            hjust = -0.01) +
-  theme(legend.position = "none") +
-  labs(title = "Persentase Maskapai Yang Sering Melakukan Cancel",
-       x = "Maskapai",
-       y = "Persentase") +
+ggplot(data = sum_tbl, mapping = aes(x = reorder(class, n), y = n)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
   coord_flip()
 
 
 # Histogram & Density
 
-g <- ggplot(data = flights, mapping = aes(x = air_time))
-
-g +
+ggplot(mpg, aes(x = displ, fill = class)) +
   geom_histogram()
 
-g +
-  geom_histogram(bins = 50, fill = "skyblue")
+ggplot(mpg, aes(x = displ)) +
+  geom_histogram(bins = 20, fill = "skyblue", color = "white")
 
-g +
-  geom_histogram(aes(y = ..density..), bins = 50, fill = "skyblue")
+ggplot(mpg, aes(x = displ)) +
+  geom_histogram(aes(y = ..density..), bins = 20, fill = "skyblue", color = "white")
 
-g +
-  geom_density(fill = "skyblue", alpha = 0.8)
+ggplot(mpg, aes(x = displ)) +
+  geom_density(fill = "skyblue", 
+               alpha = 0.8)
+
+ggplot(mpg, aes(x = displ, fill = class, color = class)) +
+  geom_density(alpha = 0.8)
 
 # Boxplot
 
-ggplot(data = flights, mapping = aes(x = name, y = dep_delay)) +
+ggplot(data = mpg, mapping = aes(x = "", y = displ)) +
   geom_boxplot()
 
-ggplot(data = flights, mapping = aes(x = "Statistics", y = dep_delay)) +
+ggplot(data = mpg, mapping = aes(x = class, y = displ, fill = class)) +
   geom_boxplot()
 
-ggplot(data = flights, mapping = aes(x = name, y = dep_delay)) +
+ggplot(data = mpg, mapping = aes(x = class, y = displ, fill = class)) +
   geom_boxplot() +
-  coord_flip()
-
-ggplot(data = flights, mapping = aes(x = name, y = dep_delay)) +
-  geom_boxplot(color = "skyblue") +
-  coord_flip()
+  coord_flip() +
+  theme(legend.position = "none")
 
 # https://ggplot2.tidyverse.org/reference/geom_boxplot.html
 
 
 # Scatter plot
 
-flights_aug <- flights %>% 
-  filter(!is.na(dep_delay) & month == 8) %>% 
-  mutate(tgl = as.Date(paste(year, month, day, sep = "-"))) %>% 
-  group_by(tgl) %>% 
-  summarise(n = n()) 
-
-ggplot(data = flights_aug, mapping = aes(x = tgl, y = n)) + 
+ggplot(mpg, aes(x = displ, y = cty)) + 
   geom_point()
 
-ggplot(data = flights_aug, mapping = aes(x = tgl, y = n)) + 
-  geom_point(size = 2) +
-  labs(title = "Jumlah Penerbangan Harian Bulan Agustus 2013",
-       x = "Tanggal",
-       y = "Jumlah")
+ggplot(mpg, aes(x = displ, y = cty, color = class)) + 
+  geom_point()
 
 
 # Line plot/time series plot
 
-ggplot(data = flights_aug, mapping = aes(x = tgl, y = n)) + 
+USAccDeaths
+
+dt_times <- data.frame(
+  dates = seq.Date(from = as.Date("1973-01-01"), 
+                   to = as.Date("1978-12-01"), 
+                   by = "month"),
+  accidents = as.vector(USAccDeaths)
+)
+
+dt_times <- subset(dt_times, dates >= as.Date("1978-01-01"))
+
+ggplot(dt_times, aes(x = dates, y = accidents)) + 
   geom_line()
 
-ggplot(data = flights_aug, mapping = aes(x = tgl, y = n)) + 
+ggplot(dt_times, aes(x = dates, y = accidents)) + 
   geom_line(size = 1, color = "skyblue")
 
-ggplot(data = flights_aug, mapping = aes(x = tgl, y = n)) + 
+ggplot(dt_times, aes(x = dates, y = accidents)) + 
   geom_line(color = "skyblue") +
   geom_point() +
-  scale_x_date(breaks = "days") +
-  theme(axis.text.x = element_text(angle = 90))
-
-ggplot(data = flights_aug, mapping = aes(x = tgl, y = n)) + 
-  geom_line(color = "skyblue") +
-  geom_point() +
-  scale_x_date(breaks = "days", date_labels = "%b %d")
-
-ggplot(data = flights_aug, mapping = aes(x = tgl, y = n)) + 
-  geom_line(color = "skyblue") +
-  geom_point() +
-  scale_x_date(breaks = "days", date_labels = "%b %d") +
-  theme(axis.text.x = element_text(angle = 45)) +
-  labs(title = "Jumlah Penerbangan Harian Bulan Agustus 2013",
-       x = "Tanggal",
-       y = "Jumlah")
+  scale_x_date(breaks = "month", date_labels = "%b-%y") 
 
 
 # Facet
 
-flights_aug2 <- flights_tbl %>% 
-  inner_join(airports, by = c("origin" = "faa"), suffix = c("_carrier", "_originairports")) %>% 
-  filter(!is.na(dep_delay) & month == 8) %>% 
-  mutate(tgl = as.Date(paste(year, month, day, sep = "-"))) %>% 
-  group_by(name_originairports, tgl) %>% 
-  summarise(n = n()) 
+ggplot(mpg, aes(x = displ, fill = class, color = class)) +
+  geom_density(alpha = 0.8) +
+  facet_wrap(facets = vars(class)) 
 
+# Annotation
+ggplot(mpg, aes(x = displ, fill = class, color = class)) +
+  geom_density(alpha = 0.8) +
+  labs(title = "Density Chart of Engine Displacement",
+       x = "Engine Displacement (litres)", y = "Density",
+       fill = "Car Type", color = "Car Type")
 
-ggplot(data = flights_aug2, mapping = aes(x = tgl, y = n)) + 
-  geom_line(color = "skyblue") +
-  geom_point() +
-  facet_grid(rows = vars(name_originairports)) +
-  scale_x_date(breaks = "days", date_labels = "%b %d") +
-  theme(axis.text.x = element_text(angle = 45)) +
-  labs(title = "Jumlah Penerbangan Harian Bulan Agustus 2013",
-       x = "Tanggal",
-       y = "Jumlah")
+# Theme
+g <- ggplot(mpg, aes(x = displ, fill = class, color = class)) +
+  geom_density(alpha = 0.8) +
+  labs(title = "Density Chart of Engine Displacement",
+       x = "Engine Displacement (litres)", y = "Density",
+       fill = "Car Type", color = "Car Type")
+g +
+  theme_bw()
+g +
+  theme_minimal()
 
-ggplot(data = flights_aug2, mapping = aes(x = tgl, y = n)) + 
-  geom_line(color = "skyblue") +
-  geom_point() +
-  facet_grid(name_originairports ~ . ) +
-  scale_x_date(breaks = "days", date_labels = "%b %d") +
-  theme(axis.text.x = element_text(angle = 45)) +
-  labs(title = "Jumlah Penerbangan Harian Bulan Agustus 2013",
-       x = "Tanggal",
-       y = "Jumlah")
-
-ggplot(data = flights_aug2, mapping = aes(x = tgl, y = n)) + 
-  geom_line(color = "skyblue") +
-  geom_point() +
-  facet_grid(cols = vars(name_originairports)) +
-  # scale_x_date(breaks = "days", date_labels = "%d") +
-  # theme(axis.text.x = element_text(angle = 45)) +
-  labs(title = "Jumlah Penerbangan Harian Bulan Agustus 2013",
-       x = "Tanggal",
-       y = "Jumlah")
-
-ggplot(data = flights_aug2, mapping = aes(x = tgl, y = n)) + 
-  geom_line(color = "skyblue") +
-  geom_point() +
-  facet_grid( . ~ name_originairports) +
-  # scale_x_date(breaks = "days", date_labels = "%d") +
-  # theme(axis.text.x = element_text(angle = 45)) +
-  labs(title = "Jumlah Penerbangan Harian Bulan Agustus 2013",
-       x = "Tanggal",
-       y = "Jumlah")
-
-ggplot(data = flights_aug2, mapping = aes(x = tgl, y = n)) + 
-  geom_line(color = "skyblue") +
-  geom_point() +
-  facet_grid(rows = vars(), cols = vars(name_originairports)) +
-  # scale_x_date(breaks = "days", date_labels = "%d") +
-  # theme(axis.text.x = element_text(angle = 45)) +
-  labs(title = "Jumlah Penerbangan Harian Bulan Agustus 2013",
-       x = "Tanggal",
-       y = "Jumlah")
+g +
+  theme_minimal() +
+  theme(legend.position = "none",
+        panel.grid.minor = element_blank())
 
 ggsave("plotR.jpg")
