@@ -119,7 +119,7 @@ install.packages(c("tidyverse", "nycflights13"))
 Panggil package yang sudah Anda install dengan fungsi `library()`.
 
 ```{r loadpkg}
-# Panggil package yang sudah terisntall
+# Panggil package yang sudah terinstall
 library(ggplot2)
 library(dplyr)
 library(tidyr)
